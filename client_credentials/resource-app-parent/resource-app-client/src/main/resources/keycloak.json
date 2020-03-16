@@ -1,0 +1,12 @@
+{
+  "realm": "bplus",
+  "auth-server-url": "http://127.0.0.1:8080/auth/",
+  "ssl-required": "none",
+  "resource": "resource-app-client",
+  "verify-token-audience": false,
+  "credentials": {
+    "secret": "c6f603ce-b06c-4e78-9117-d5b8e6f4bd27"
+  },
+  "use-resource-role-mappings": true,
+  "confidential-port": 0
+}
