@@ -7,6 +7,6 @@
   "credentials": {
     "secret": "c6f603ce-b06c-4e78-9117-d5b8e6f4bd27"
   },
-  "use-resource-role-mappings": true,
+  "use-resource-role-mappings": false,
   "confidential-port": 0
 }
