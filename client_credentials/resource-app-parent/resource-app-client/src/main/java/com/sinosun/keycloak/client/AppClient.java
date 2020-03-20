@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.keycloak.adapters.springboot.client.KeycloakSecurityContextClientRequestInterceptor;
-import org.keycloak.authorization.client.AuthzClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -36,8 +35,6 @@ public class AppClient {
     private String oneService = "http://127.0.0.1:9100";
     
     private String twoService = "http://127.0.0.1:9200";
-   
-    
     
     @Test
     public void testOneIndex() {
@@ -68,19 +65,6 @@ public class AppClient {
         logger.info("/two/greeting?name=two ->  {}", responseEntity.getBody());
     }
     
-    static class ServiceContext {
-        
-        private static final Logger LOGGER = LoggerFactory.getLogger(ServiceContext.class);
-        
-        private static AuthzClient authzClient = AuthzClient.create();
-        
-        static String getToken() {
-            String token = authzClient.obtainAccessToken().getToken();
-            LOGGER.info("Obtain access token: {}", token);
-            return token;
-        }
-    }
-    
     static class ClientRestTemplateCustomizer implements RestTemplateCustomizer {
         
         @Override
@@ -94,7 +78,7 @@ public class AppClient {
         
         @Override
         public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] bytes, ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
-            httpRequest.getHeaders().set("Authorization", "Bearer " + ServiceContext.getToken());
+            httpRequest.getHeaders().set("Authorization", "Bearer " + new KeycloakTokenContext().getToken());
             return clientHttpRequestExecution.execute(httpRequest, bytes);
         }
     }
