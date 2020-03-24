@@ -12,10 +12,15 @@ import org.keycloak.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Objects;
 
 /**
+ * 建议一个应用程序持有一个KeycloakTokenContext实例，进行Token的获取以及刷新
+ * 注意：该示例暂未考虑线程安全性问题
+ * <p>
  * Author: secondriver
  * Created: 2020/3/20
  */
@@ -29,23 +34,54 @@ public class KeycloakTokenContext {
     
     private AccessTokenResponse clientToken;
     
-    public KeycloakTokenContext() {
-        this(null);
-    }
-    
-    public KeycloakTokenContext(Configuration configuration) {
+    private KeycloakTokenContext(Configuration configuration) {
         try {
-            if (Objects.isNull(configuration)) {
-                authzClient = AuthzClient.create();
-            } else {
-                authzClient = AuthzClient.create(configuration);
-            }
+            
+            authzClient = AuthzClient.create(configuration);
             Field httpField = authzClient.getClass().getDeclaredField("http");
             httpField.setAccessible(true);
             http = (Http) httpField.get(authzClient);
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Default read classpath keycloak.json installation configuration information
+     *
+     * @return KeycloakTokenContext
+     */
+    public static KeycloakTokenContext create() {
+        InputStream configStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("keycloak.json");
+        return create(configStream);
+    }
+    
+    /**
+     * Create KeycloakTokenContext by configuration stream
+     *
+     * @param configStream keycloak installation configuration file path
+     * @return KeycloakTokenContext
+     * @throws RuntimeException
+     */
+    public static KeycloakTokenContext create(InputStream configStream) throws RuntimeException {
+        if (Objects.isNull(configStream)) {
+            throw new IllegalArgumentException("Config input stream can not be null");
+        }
+        try {
+            return create(JsonSerialization.readValue(configStream, Configuration.class));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not parse configuration.", e);
+        }
+    }
+    
+    /**
+     * Create KeycloakTokenContext by configuration instance
+     *
+     * @param configuration keycloak configuration instance
+     * @return KeycloakTokenContext
+     */
+    public static KeycloakTokenContext create(Configuration configuration) {
+        return new KeycloakTokenContext(configuration);
     }
     
     

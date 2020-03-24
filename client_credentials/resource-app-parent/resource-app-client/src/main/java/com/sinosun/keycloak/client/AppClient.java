@@ -78,7 +78,7 @@ public class AppClient {
         
         @Override
         public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] bytes, ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
-            httpRequest.getHeaders().set("Authorization", "Bearer " + new KeycloakTokenContext().getToken());
+            httpRequest.getHeaders().set("Authorization", "Bearer " + KeycloakTokenContext.create().getToken());
             return clientHttpRequestExecution.execute(httpRequest, bytes);
         }
     }
