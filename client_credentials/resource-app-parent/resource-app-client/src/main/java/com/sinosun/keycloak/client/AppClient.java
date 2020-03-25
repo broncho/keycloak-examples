@@ -4,20 +4,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.keycloak.adapters.springboot.client.KeycloakSecurityContextClientRequestInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.boot.web.client.RestTemplateCustomizer;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.util.Collections;
 
 /**
  * Author: secondriver
@@ -28,9 +19,7 @@ public class AppClient {
     
     private final Logger logger = LoggerFactory.getLogger(AppClient.class);
     
-    private RestTemplate restTemplate = new RestTemplateBuilder()
-            .customizers(new ClientRestTemplateCustomizer())
-            .build();
+   private RestTemplate restTemplate = RestTemplateFactory.create();
     
     private String oneService = "http://127.0.0.1:9100";
     
@@ -65,21 +54,5 @@ public class AppClient {
         logger.info("/two/greeting?name=two ->  {}", responseEntity.getBody());
     }
     
-    static class ClientRestTemplateCustomizer implements RestTemplateCustomizer {
-        
-        @Override
-        public void customize(RestTemplate restTemplate) {
-            restTemplate.setInterceptors(Collections.singletonList(new ClientRestRequestInterceptor()));
-        }
-    }
-    
-    
-    static class ClientRestRequestInterceptor extends KeycloakSecurityContextClientRequestInterceptor {
-        
-        @Override
-        public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] bytes, ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
-            httpRequest.getHeaders().set("Authorization", "Bearer " + KeycloakTokenContext.create().getToken());
-            return clientHttpRequestExecution.execute(httpRequest, bytes);
-        }
-    }
+  
 }
